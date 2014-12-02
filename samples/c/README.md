@@ -13,15 +13,15 @@ The events that are emitted in this sample are:
 
 ####Get the deb installer
 ```
-pi@raspberrypi ~ $ curl -LO https://github.com/ibm-messaging/iot-raspberrypi/releases/download/1.0.0/iot1.0.0_armhf.deb
+pi@raspberrypi ~ $ curl -LO https://github.com/ibm-messaging/iot-raspberrypi/releases/download/1.0.2/iot_1.0-1_armhf.deb
 ```
 
 ####Install the deb
 ```
-pi@raspberrypi ~ $ sudo dpkg -i iot1.0.0_armhf.deb
+pi@raspberrypi ~ $ sudo dpkg -i iot_1.0-1_armhf.deb
 Selecting previously unselected package iot.
 (Reading database ... 68603 files and directories currently installed.)
-Unpacking iot (from iot1.0.0_armhf.deb) ...
+Unpacking iot (from iot1.0-1_armhf.deb) ...
 Setting up iot (1.0-1) ...
 Starting the iot program
 ```
