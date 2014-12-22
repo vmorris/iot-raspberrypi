@@ -143,5 +143,7 @@ Make the necessary changes to the c source files and finally build the .deb file
 
 Now the .deb file will be generated on the directory one level up.
 
+Note: You can ignore the signing errors when the build finishes(lint), as a certificate is required if you want to publish this build to the debian repository. 
+
 ####Note for Windows Users:
 When you clone/fork this repository,ensure that file permissions for the libraries are set properly and that  "libpaho-mqtt3a.so" and "libpaho-mqtt3a.so.1" are symbolic links. 
