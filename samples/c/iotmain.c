@@ -21,13 +21,11 @@
 #include <syslog.h>
 
 char configFile[50] = "/etc/iotsample-raspberrypi/device.cfg";
-float PI = 3.1415926;
-float MIN_VALUE = -1.0;
-float MAX_VALUE = 1.0;
-
 char clientId[MAXBUF];
 char publishTopic[MAXBUF] = "iot-2/evt/status/fmt/json";
 char subscribeTopic[MAXBUF] = "iot-2/cmd/reboot/fmt/json";
+char DHT11File[MAXBUF] = "/var/log/DHT11.log";
+FILE *fileStream;
 
 //flag to check if running in registered mode or quickstart mode
 // registered mode = 1
@@ -47,13 +45,13 @@ struct config {
 
 int get_config(char* filename, struct config * configstr);
 void getClientId(struct config * configstr, char* mac_address);
-float sineVal(float minValue, float maxValue, float duration, float count);
 void sig_handler(int signo);
 int reconnect_delay(int i);
 
-//cpustat.c
-float getCPUTemp();
-float GetCPULoad();
+void getDHT11data();
+float temp;
+float humidity;
+
 //mac.c
 char *getmac(char *iface);
 //jsonator.c
@@ -84,7 +82,7 @@ int main(int argc, char **argv) {
 	//setup the syslog logging
 	setlogmask(LOG_UPTO(LOGLEVEL));
 	openlog("iot", LOG_PID | LOG_CONS, LOG_USER);
-	syslog(LOG_INFO, "**** IoT Raspberry Pi Sample has started ****");
+	syslog(LOG_INFO, "**** IoT Raspberry Pi has started ****");
 
 	// register the signal handler for USR1-user defined signal 1
 	if (signal(SIGUSR1, sig_handler) == SIG_ERR)
@@ -149,8 +147,16 @@ int main(int argc, char **argv) {
 		subscribe(&client, subscribeTopic);
 	}
 	while (1) {
-		JsonMessage json_message = { DEVICE_NAME, getCPUTemp(), sineVal(
-				MIN_VALUE, MAX_VALUE, 16, count), GetCPULoad() };
+		getDHT11data();
+		JsonMessage json_message = { 
+			DEVICE_NAME, 
+			temp,
+			humidity
+		};
+		
+//		syslog(LOG_INFO, "after json_message: temp: %.2f", temp);
+//		syslog(LOG_INFO, "after json_message: humidity: %.2f", humidity);
+	
 		json = generateJSON(json_message);
 		res = publishMQTTMessage(&client, publishTopic, json);
 		syslog(LOG_DEBUG, "Posted the message with result code = %d\n", res);
@@ -207,18 +213,33 @@ void getClientId(struct config * configstr, char* mac_address) {
 //	sprintf(clientId, "%s:%s", TENANT_PREFIX,mac_address);
 }
 
-//This function generates the sine value based on the interval specified and the duration
-float sineVal(float minValue, float maxValue, float duration, float count) {
-	float sineValue;
-	sineValue = sin(2.0 * PI * count / duration) * (maxValue - minValue) / 2.0;
-	return sineValue;
+void getDHT11data(){
+	fileStream = fopen(DHT11File, "r");
+	char fileText[100];
+	fgets(fileText, 100, fileStream);
+	fclose(fileStream);
+	
+//	syslog(LOG_INFO, fileText);
+	
+	char *pch;
+	pch = strtok(fileText, " =");
+	while (pch != NULL) {
+		if (strcmp("Temp", pch) == 0) {
+			temp = atof(strtok(NULL, " ="));
+//			syslog(LOG_INFO, "temp: %.2f", temp);
+		}
+		if (strcmp("Humidity", pch) == 0) {
+			humidity = atof(strtok(NULL, " ="));
+//			syslog(LOG_INFO, "humidity: %.2f", humidity);
+		}
+		pch = strtok(NULL, " =");
+	}
 }
 
 // Signal handler to handle when the user tries to kill this process. Try to close down gracefully
 void sig_handler(int signo) {
 	syslog(LOG_INFO, "Received the signal to terminate the IoT process. \n");
-	syslog(LOG_INFO,
-			"Trying to end the process gracefully. Closing the MQTT connection. \n");
+	syslog(LOG_INFO,"Trying to end the process gracefully. Closing the MQTT connection. \n");
 	int res = disconnect_mqtt_client(&client);
 
 	syslog(LOG_INFO, "Disconnect finished with result code : %d\n", res);

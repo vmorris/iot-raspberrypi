@@ -34,18 +34,14 @@ char * generateJSON(JsonMessage passedrpi ) {
 	strcat(jsonReturned, "\",");
 	char buffer[10];
 
-	strcat(jsonReturned, "\"cputemp\":");
-	sprintf(buffer, "%.2f", passedrpi.cputemp);
+	strcat(jsonReturned, "\"temp\":");
+	sprintf(buffer, "%.2f", passedrpi.temp);
 	strcat(jsonReturned, buffer);
 	strcat(jsonReturned, ",");
 
-	strcat(jsonReturned, "\"cpuload\":");
-	sprintf(buffer, "%.2f", passedrpi.cpuload);
-	strcat(jsonReturned, buffer);
-	strcat(jsonReturned, ",");
-
-	strcat(jsonReturned, "\"sine\":");
-	sprintf(buffer, "%.2f", passedrpi.sine);
+	strcat(jsonReturned, "\"humidity\":");
+	sprintf(buffer, "%.2f", passedrpi.humidity);
+	//printf("humidity: %.2f", passedrpi.humidity);
 	strcat(jsonReturned, buffer);
 
 	strcat(jsonReturned, "}");

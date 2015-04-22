@@ -18,12 +18,11 @@
 #define IOT_H_
 
 /* This is structure for the JSON */
-
+/* VEM 20APR2015 - added temp and humidity to struct */
   struct json {
 	  char myname[100];
-	  float cputemp;
-	  float sine;
-	  float cpuload;
+          float temp;
+          float humidity;
   };
 
   /* This is the short hand for json */
